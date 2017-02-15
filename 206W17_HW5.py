@@ -57,14 +57,19 @@ try:
 except:
     CACHE_DICTION = {}
 
+def sortAndRemoveCapitals(searchString):
+    sortedSearchList = sorted(searchString.split())
+    normalizedSearch = ""
+    for word in sortedSearchList:
+        normalizedSearch += word.lower()
+        normalizedSearch += " "
+
+    return normalizedSearch
 
 def getWithCaching(searchString):
     if searchString in CACHE_DICTION:
-        print('using cache')
-        response = CACHE_DICTION[searchString] # grab the data from the cache
+        response = CACHE_DICTION[searchString]
     else:
-        print('fetching')
-        # store the response
         response = api.search(searchString)
         CACHE_DICTION[searchString] = response
 
@@ -76,7 +81,8 @@ def getWithCaching(searchString):
 
 
 searchString = input("Twitter Search: ")
-response = getWithCaching(searchString)
+normalizedSearch = sortAndRemoveCapitals(searchString)
+response = getWithCaching(normalizedSearch)
 
 
 for index, item in enumerate(response["statuses"]):
@@ -84,7 +90,7 @@ for index, item in enumerate(response["statuses"]):
         break
     print("TEXT: " + item["text"])
     print("CREATED AT: " + item["created_at"])
-    print("-"*100)
+    print()
 
 #### Recommended order of tasks: ####
 ## 1. Set up the caching pattern start -- the dictionary and the try/except statement shown in class.
