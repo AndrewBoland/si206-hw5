@@ -3,6 +3,8 @@ import tweepy
 import requests
 import json
 
+import twitter_info as keys
+
 ## SI 206 - W17 - HW5
 ## COMMENT WITH:
 ## Your section day/time: Thursday Feb 16/3:00
@@ -28,23 +30,61 @@ import json
 ## The lecture notes and exercises from this week will be very helpful for this. 
 ## Because it is dependent on user input, there are no unit tests for this -- we will run your assignments in a batch to grade them!
 
-## We've provided some starter code below, like what is in the class tweepy examples.
-
+## We've provided some starter code below, like what is in the class tweepy examples. 
 ## **** For 50 points of extra credit, create another file called twitter_info.py that contains your consumer_key, consumer_secret, access_token, and access_token_secret, import that file here, and use the process we discuss in class to make that information secure! Do NOT add and commit that file to a public GitHub repository.
 
 ## **** If you choose not to do that, we strongly advise using authentication information for an 'extra' Twitter account you make just for this class, and not your personal account, because it's not ideal to share your authentication information for a real account that you use frequently.
 
 ## Get your secret values to authenticate to Twitter. You may replace each of these with variables rather than filling in the empty strings if you choose to do the secure way for 50 EC points
-consumer_key = "" 
-consumer_secret = ""
-access_token = ""
-access_token_secret = ""
+consumer_key = keys.consumer_key
+consumer_secret = keys.consumer_secret
+access_token = keys.access_token
+access_token_secret = keys.access_token_secret
 ## Set up your authentication to Twitter
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, parser=tweepy.parsers.JSONParser()) # Set up library to grab stuff from twitter with your authentication, and return it in a JSON-formatted way
 
-## Write the rest of your code here!
+## Write the rest
+
+CACHE_FNAME = 'search_cached.json'
+
+try:
+    cache_file = open(CACHE_FNAME, 'r')
+    cache_contents = cache_file.read()
+    CACHE_DICTION = json.loads(cache_contents)
+    cache_file.close()
+except:
+    CACHE_DICTION = {}
+
+
+def getWithCaching(searchString):
+    if searchString in CACHE_DICTION:
+        print('using cache')
+        response = CACHE_DICTION[searchString] # grab the data from the cache
+    else:
+        print('fetching')
+        # store the response
+        response = api.search(searchString)
+        CACHE_DICTION[searchString] = response
+
+        cache_file = open(CACHE_FNAME, 'w')
+        cache_file.write(json.dumps(CACHE_DICTION))
+        cache_file.close()
+
+    return response
+
+
+searchString = input("Twitter Search: ")
+response = getWithCaching(searchString)
+
+
+for index, item in enumerate(response["statuses"]):
+    if index == 3:
+        break
+    print("TEXT: " + item["text"])
+    print("CREATED AT: " + item["created_at"])
+    print("-"*100)
 
 #### Recommended order of tasks: ####
 ## 1. Set up the caching pattern start -- the dictionary and the try/except statement shown in class.
