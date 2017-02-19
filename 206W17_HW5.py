@@ -45,8 +45,6 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, parser=tweepy.parsers.JSONParser()) # Set up library to grab stuff from twitter with your authentication, and return it in a JSON-formatted way
 
-## Write the rest
-
 CACHE_FNAME = 'search_cached.json'
 
 try:
@@ -58,13 +56,13 @@ except:
     CACHE_DICTION = {}
 
 def sortAndRemoveCapitals(searchString):
-    sortedSearchList = sorted(searchString.split())
+    sortedSearchList = sorted(searchString.lower().split())
     normalizedSearch = ""
     for word in sortedSearchList:
-        normalizedSearch += word.lower()
+        normalizedSearch += word
         normalizedSearch += " "
 
-    return normalizedSearch
+    return normalizedSearch.rstrip()
 
 def getWithCaching(searchString):
     if searchString in CACHE_DICTION:
@@ -85,9 +83,7 @@ normalizedSearch = sortAndRemoveCapitals(searchString)
 response = getWithCaching(normalizedSearch)
 
 
-for index, item in enumerate(response["statuses"]):
-    if index == 3:
-        break
+for item in response["statuses"][:3]:
     print("TEXT: " + item["text"])
     print("CREATED AT: " + item["created_at"])
     print()
